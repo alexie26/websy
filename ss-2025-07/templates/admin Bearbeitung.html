@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Benutzer bearbeiten</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f4f6f8;
+      color: #2c3e50;
+      padding: 40px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    form {
+      max-width: 600px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: bold;
+      margin-top: 20px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      margin-bottom: 10px;
+    }
+
+    button {
+      background-color: #27ae60;
+      color: white;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    button:hover {
+      background-color: #219150;
+    }
+
+    a.button-link {
+      display: inline-block;
+      margin-left: 10px;
+      padding: 12px 20px;
+      background-color: #ccc;
+      color: #2c3e50;
+      text-decoration: none;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Benutzer bearbeiten</h1>
+
+  <form method="POST">
+    <label for="Benutzername">Benutzername</label>
+    <input type="text" name="Benutzername" id="Benutzername" value="{{ user.Benutzername }}" required>
+
+    <label for="Vorname">Vorname</label>
+    <input type="text" name="Vorname" id="Vorname" value="{{ user.Vorname }}" required>
+
+    <label for="Nachname">Nachname</label>
+    <input type="text" name="Nachname" id="Nachname" value="{{ user.Nachname }}" required>
+
+    <label for="Email">E-Mail</label>
+    <input type="email" name="Email" id="Email" value="{{ user.Email }}" required>
+
+    <div class="form-group">
+                <label for="strasse">Straße</label>
+                <input type="text" id="strasse" name="strasse" class="form-control" value="{{ user.strasse }}"required>
+            </div>
+
+            <div class="form-group">
+                <label for="hausnummer">Hausnummer</label>
+                <input type="text" id="hausnummer" name="hausnummer" class="form-control" value="{{ user.hausnummer }}"required >
+            </div>
+
+            <div class="form-group">
+                <label for="plz">PLZ</label>
+                <input type="text" id="plz" name="plz" class="form-control" value="{{ user.plz }}"required >
+            </div>
+
+            <div class="form-group">
+                <label for="ort">Ort</label>
+                <input type="text" id="ort" name="ort" class="form-control" value="{{ user.ort }}"required >
+            </div>
+
+            <div class="form-group">
+                <label for="telefon">Telefon</label>
+                <input type="text" id="telefon" name="telefon" class="form-control" value="{{ user.telefon }}"required >
+            </div>
+
+            <div class="form-group">
+                <label for="profilbild">Profilbild (optional)</label>
+                <input type="file" id="profilbild" name="profilbild" class="form-control" value="{{ user.profilbild }}">
+            </div>
+
+
+
+
+
+    <label for="rolle">Rolle</label>
+    <select name="rolle" id="rolle" required>
+      <option value="admin" {% if user.Rolle == 'admin' %}selected{% endif %}>Admin</option>
+      <option value="user" {% if user.Rolle == 'user' %}selected{% endif %}>User</option>
+      <option value="editor" {% if user.Rolle == 'editor' %}selected{% endif %}>Editor</option>
+    </select>
+
+    <button type="submit">Speichern</button>
+    <a class="button-link" href="{{ url_for('admin_dashboard') }}">Abbrechen</a>
+  </form>
+
+</body>
+</html>

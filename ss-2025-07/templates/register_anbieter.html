@@ -1,0 +1,84 @@
+{% extends "layout.html" %}
+
+{% block title %}Bellaswipe - Startseite{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% endblock %}
+
+{% block content %}
+ <div class="container">
+        <h1>Anbieter Registrierung</h1>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'danger' else 'success' }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST" action="{{ url_for('register_anbieter') }}">
+            <h3>Persönliche Daten</h3>
+
+            <div class="form-group">
+                <label for="vorname">Vorname *</label>
+                <input type="text" class="form-control" id="vorname" name="vorname" required>
+            </div>
+
+            <div class="form-group">
+                <label for="nachname">Nachname *</label>
+                <input type="text" class="form-control" id="nachname" name="nachname" required>
+            </div>
+
+            <div class="form-group">
+                <label for="email">E-Mail *</label>
+                <input type="email" class="form-control" id="email" name="email" required>
+            </div>
+
+            <div class="form-group">
+                <label for="benutzername">Benutzername *</label>
+                <input type="text" class="form-control" id="benutzername" name="benutzername" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Passwort *</label>
+                <input type="password" class="form-control" id="password" name="password" required>
+            </div>
+
+            <h3>Kontaktinformationen</h3>
+
+            <div class="form-group">
+                <label for="telefon">Telefonnummer *</label>
+                <input type="tel" class="form-control" id="telefon" name="telefon" required>
+            </div>
+
+            <h3>Adresse</h3>
+
+            <div class="form-group">
+                <label for="strasse">Straße *</label>
+                <input type="text" class="form-control" id="strasse" name="strasse" required>
+            </div>
+
+            <div class="form-group">
+                <label for="hausnummer">Hausnummer *</label>
+                <input type="text" class="form-control" id="hausnummer" name="hausnummer" required>
+            </div>
+
+            <div class="form-group">
+                <label for="plz">PLZ *</label>
+                <input type="text" class="form-control" id="plz" name="plz" required>
+            </div>
+
+            <div class="form-group">
+                <label for="ort">Ort *</label>
+                <input type="text" class="form-control" id="ort" name="ort" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Als Anbieter registrieren</button>
+            <a href="{{ url_for('register') }}" class="btn btn-secondary">Zurück</a>
+        </form>
+    </div>
+
+{% endblock %}

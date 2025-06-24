@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Profilseit von Ghazal Al Kudsy</title>
+</head>
+<body>
+<h1> Profilseite </h1>
+<a href="/galkudsy">
+ <img src="{{ url_for('static', filename='galkudsy.jpg') }}" alt="Profilbild" width="200">
+
+    </a>
+<h1>Über mich</h1>
+        <ul>
+            <li><span class="label">Name:</span> Ghazal Al Kudsy</li>
+            <li><span class="label">Alter:</span> 22</li>
+            <li><span class="label">Hobbys:</span> Lesen, Spazierengehen</li>
+            <li><span class="label">E-Mail:</span> galkudsy@stud.hs-heilbronn.de</li>
+            <li><span class="label">Matrikelnummer:</span> 223123</li>
+        </ul>
+</body>
+</html>
+<h2>Aus meiner Datenbank</h2>
+{% if daten %}
+    <table>
+        <thead>
+             <tr>
+                <th>id</th>
+                <th>beschreibung</th>
+            </tr>
+        </thead>
+        <body>
+            {%for x in daten %}
+            <tr>
+                <td>{{ x.id }}</td>
+                <td>{{ x.beschreibung }}</td>
+             </tr>
+            {% endfor %}
+        </body>
+    </table>
+    {% else %}
+    <p>Keine Hobbies vorhanden</p>
+    {% endif %}
+
+ <a href="/">Zurück zur Startseite</a>

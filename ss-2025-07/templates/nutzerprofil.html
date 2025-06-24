@@ -1,0 +1,83 @@
+{% extends "layout.html" %}
+
+{% block title %}Mein Profil{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">Mein Profil</h2>
+
+<div class="mb-5">
+    <p><strong>Vorname:</strong> {{ nutzer.Vorname }}</p>
+    <p><strong>Nachname:</strong> {{ nutzer.Nachname }}</p>
+    <p><strong>Email-Adresse:</strong> {{ nutzer.EMail }}</p>
+    <p><strong>Straße:</strong> {{ nutzer.Strasse }}</p>
+    <p><strong>Hausnummer:</strong> {{ nutzer.Hausnummer }}</p>
+    <p><strong>PLZ:</strong> {{ nutzer.PLZ }}</p>
+    <p><strong>Ort:</strong> {{ nutzer.ORT }}</p>
+    <p><strong>Telefon:</strong> {{ nutzer.Telefon }}</p>
+</div>
+
+<h2 class="mb-3">Profil bearbeiten</h2>
+
+<form method="POST">
+    <div class="table-responsive">
+        <table class="table table-borderless align-middle">
+            <tbody>
+                <tr>
+                    <td><label for="vorname">Vorname:</label></td>
+                    <td><input type="text" class="form-control" id="vorname" name="Vorname" value="{{ nutzer.Vorname }}" required></td>
+                </tr>
+                <tr>
+                    <td><label for="nachname">Nachname:</label></td>
+                    <td><input type="text" class="form-control" id="nachname" name="Nachname" value="{{ nutzer.Nachname }}" required></td>
+                </tr>
+                <tr>
+                    <td><label for="email">E-Mail:</label></td>
+                    <td><input type="email" class="form-control" id="email" name="EMail" value="{{ nutzer.EMail }}" required></td>
+                </tr>
+                <tr>
+                    <td><label for="strasse">Straße:</label></td>
+                    <td><input type="text" class="form-control" id="strasse" name="Strasse" value="{{ nutzer.Strasse }}"></td>
+                </tr>
+                <tr>
+                    <td><label for="hausnummer">Hausnummer:</label></td>
+                    <td><input type="text" class="form-control" id="hausnummer" name="Hausnummer" value="{{ nutzer.Hausnummer }}"></td>
+                </tr>
+                <tr>
+                    <td><label for="plz">PLZ:</label></td>
+                    <td><input type="text" class="form-control" id="plz" name="PLZ" value="{{ nutzer.PLZ }}"></td>
+                </tr>
+                <tr>
+                    <td><label for="ort">Ort:</label></td>
+                    <td><input type="text" class="form-control" id="ort" name="ORT" value="{{ nutzer.ORT }}"></td>
+                </tr>
+                <tr>
+                    <td><label for="telefon">Telefon:</label></td>
+                    <td><input type="text" class="form-control" id="telefon" name="Telefon" value="{{ nutzer.Telefon }}"></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>
+                        <button type="submit" class="btn btn-success">Änderungen speichern</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</form>
+
+<hr>
+
+
+<h3 class="mt-5">Meine gebuchten Termine</h3>
+{% if termine %}
+    <ul class="list-group mt-3">
+        {% for termin in termine %}
+            <li class="list-group-item">
+                {{ termin.Datum }} um {{ termin.Uhrzeit }} – {{ termin.Dienstleistung }} bei {{ termin.Unternehmen }}
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p class="mt-3">Sie haben keine gebuchten Termine.</p>
+{% endif %}
+{% endblock %}

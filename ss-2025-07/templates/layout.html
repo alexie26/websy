@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;600&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+    <title>{% block title %}Bellaswipe{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .mainpage-bild  {
+            background-image: url("{{ url_for('static', filename='background.jpeg') }}");
+        }
+    </style>
+    {% block head %}{% endblock %}
+</head>
+<body>
+<header class="main-header">
+<div class="header-links">
+    <img src="{{ url_for('static', filename='logo_rund.PNG') }}" alt="Bellaswipe" class="logo" />
+    <span class="logo-text">BELLASWIPE</span>
+</div>
+    <nav id="menu" class="primaer" rolle="navigation" aria-label="Main navigation">
+        <ul class="list">
+        <li><a href="{{ url_for('startseite') }}">Home</a></li>
+
+            <li class="has-dropdown">
+            <a href="#">Dienstleistungen</a>
+            <ul class="dropdown">
+                <li><a href="#">Laches und Waxing</a></li>
+                <li><a href="#">Frisuren und Coloration</a></li>
+                <li><a href="#">Hand und Fusspflege</a></li>
+                <li><a href="#">Kostemtikstudio und Hautpflege</a></li>
+                <li><a href="#">Wimpern und Augenbrauen</a></li>
+                <li><a href="#">Wellness undd Spaa</a></li>
+            </ul>
+            </li>
+        {% if session.nutzer_id %}
+            <li><a href="{{ url_for('nutzerprofil') }}">Mein Profil</a></li>
+            <li><a href="{{ url_for('unternehmensprofil') }}">Anbieter Profil</a></li>
+            <li><a href="{{ url_for('logout') }}">Logout</a></li>
+        {% else %}
+            <li><a href="{{ url_for('login') }}">Login</a></li>
+        <li><a href="{{ url_for('register') }}">Registrieren</a></li>
+        {% endif %}
+
+        </ul>
+    </nav>
+</header>
+
+  <main>
+      {% block content %}{% endblock %}
+  </main>
+
+  <footer>
+      <div class="page-wrapper">
+          <section class="footer-section">
+              <p>Kontaktiere uns: </p>
+              <ul class="administration">
+                  <li><a href="{{ url_for('admin_dashboard') }}">Admin</a></li>
+              </ul>
+          </section>
+      </div>
+  </footer>
+</body>
+</html>

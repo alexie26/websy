@@ -1,0 +1,489 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Header je nach Benutzerrolle -->
+    {% if session.rolle == 'Anbieter' %}
+        <h2>Terminverwaltung - {{ anbieter_name }}</h2>
+        <p class="text-muted">Verwalten Sie Ihre Termine und Verfügbarkeiten</p>
+    {% else %}
+        <h2>Termine buchen</h2>
+        <p class="text-muted">Buchen Sie Ihren gewünschten Termin</p>
+    {% endif %}
+
+    <!-- Kalender-Navigation -->
+    <section class="mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3>{{ aktueller_monat }} {{ aktuelles_jahr }}</h3>
+            <div>
+                <a href="{{ url_for('terminverwaltung', monat=vorheriger_monat, jahr=vorheriges_jahr) }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-chevron-left"></i> Zurück
+                </a>
+                <a href="{{ url_for('terminverwaltung', monat=naechster_monat, jahr=naechstes_jahr) }}" class="btn btn-outline-secondary">
+                    Weiter <i class="fas fa-chevron-right"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- Kalender-Grid -->
+        <div class="calendar-grid border rounded p-3">
+            <div class="row">
+                <div class="col calendar-header text-center py-2 border-bottom"><strong>Mo</strong></div>
+                <div class="col calendar-header text-center py-2 border-bottom"><strong>Di</strong></div>
+                <div class="col calendar-header text-center py-2 border-bottom"><strong>Mi</strong></div>
+                <div class="col calendar-header text-center py-2 border-bottom"><strong>Do</strong></div>
+                <div class="col calendar-header text-center py-2 border-bottom"><strong>Fr</strong></div>
+                <div class="col calendar-header text-center py-2 border-bottom"><strong>Sa</strong></div>
+                <div class="col calendar-header text-center py-2 border-bottom"><strong>So</strong></div>
+            </div>
+
+            {% for woche in kalender_tage %}
+            <div class="row">
+                {% for tag in woche %}
+                <div class="col calendar-day p-2 border-end border-bottom position-relative" style="min-height: 80px;">
+                    {% if tag.datum %}
+                        <div class="day-number mb-1">{{ tag.tag }}</div>
+
+                        <!-- Termine für diesen Tag anzeigen -->
+                        {% for termin in tag.termine %}
+                            <div class="termin-slot mb-1 p-1 rounded text-xs
+                                {% if termin.status == 'gebucht' %}bg-success text-white
+                                {% elif termin.status == 'storniert' %}bg-danger text-white
+                                {% else %}bg-light{% endif %}"
+                                data-bs-toggle="tooltip"
+                                title="{{ termin.uhrzeit }} - {{ termin.dienstleistung }}">
+                                {{ termin.uhrzeit }}
+                                {% if session.rolle == 'Anbieter' %}
+                                    <br><small>{{ termin.kunde_name }}</small>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+
+                        <!-- Verfügbare Zeitslots -->
+                        {% if session.rolle == 'Nutzer' and tag.verfuegbare_slots %}
+                            {% for slot in tag.verfuegbare_slots %}
+                                <button class="btn btn-sm btn-outline-primary mb-1 w-100"
+                                        onclick="terminBuchen('{{ tag.datum }}', '{{ slot }}')">
+                                    {{ slot }}
+                                </button>
+                            {% endfor %}
+                        {% endif %}
+
+                        <!-- Anbieter: Neue Zeitslots hinzufügen -->
+                        {% if session.rolle == 'Anbieter' %}
+                            <button class="btn btn-sm btn-outline-success w-100"
+                                    onclick="zeitslotHinzufuegen('{{ tag.datum }}')">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        {% endif %}
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Anbieter-spezifische Funktionen -->
+    {% if session.rolle == 'Anbieter' %}
+    <section class="mb-4">
+        <h3>Verfügbarkeiten verwalten</h3>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Neue Verfügbarkeit hinzufügen</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="verfuegbarkeitForm">
+                            <div class="mb-3">
+                                <label for="datum" class="form-label">Datum:</label>
+                                <input type="date" class="form-control" id="datum" name="datum" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="startzeit" class="form-label">Von:</label>
+                                <input type="time" class="form-control" id="startzeit" name="startzeit" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="endzeit" class="form-label">Bis:</label>
+                                <input type="time" class="form-control" id="endzeit" name="endzeit" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="dienstleistung" class="form-label">Dienstleistung:</label>
+                                <select class="form-control" id="dienstleistung" name="dienstleistung_id" required>
+                                    <option value="">Bitte wählen...</option>
+                                    {% for dienst in dienstleistungen %}
+                                    <option value="{{ dienst.Dienstleistung_ID }}">{{ dienst.Titel }} ({{ dienst.Dauer }} Min)</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-success">Verfügbarkeit hinzufügen</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Aktuelle Termine</h5>
+                    </div>
+                    <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+                        {% for termin in aktuelle_termine %}
+                        <div class="d-flex justify-content-between align-items-center mb-2 p-2 border rounded">
+                            <div>
+                                <strong>{{ termin.Datum }}</strong> um {{ termin.Uhrzeit }}<br>
+                                <small class="text-muted">{{ termin.kunde_name }} - {{ termin.dienstleistung }}</small>
+                            </div>
+                            <div class="btn-group btn-group-sm">
+                                {% if termin.Status == 'gebucht' %}
+                                    <button class="btn btn-success btn-sm" onclick="terminAbschliessen({{ termin.Termin_ID }})">
+                                        Abschließen
+                                    </button>
+                                    <button class="btn btn-danger btn-sm" onclick="terminStornieren({{ termin.Termin_ID }})">
+                                        Stornieren
+                                    </button>
+                                {% else %}
+                                    <span class="badge bg-secondary">{{ termin.Status|title }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- Nutzer-spezifische Funktionen -->
+    {% if session.rolle == 'Nutzer' %}
+    <section class="mb-4">
+        <h3>Verfügbare Dienstleistungen</h3>
+        <div class="row">
+            {% for dienst in dienstleistungen %}
+            <div class="col-md-4 mb-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ dienst.Titel }}</h5>
+                        <p class="card-text">{{ dienst.Beschreibung[:100] }}...</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-muted">{{ dienst.Dauer }} Min</span>
+                            <strong>{{ "%.2f"|format(dienst.Preise) }}€</strong>
+                        </div>
+                        <button class="btn btn-primary btn-sm mt-2" onclick="dienstleistungWaehlen({{ dienst.Dienstleistung_ID }})">
+                            Auswählen
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="mb-4">
+        <h3>Meine gebuchten Termine</h3>
+        {% if meine_termine %}
+            <div class="list-group">
+                {% for termin in meine_termine %}
+                <div class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-1">{{ termin.Datum }} um {{ termin.Uhrzeit }}</h6>
+                        <p class="mb-1">{{ termin.dienstleistung }} bei {{ termin.unternehmen }}</p>
+                        <small class="text-muted">Status: {{ termin.Status }}</small>
+                    </div>
+                    <div>
+                        {% if termin.Status == 'gebucht' %}
+                            <button class="btn btn-outline-danger btn-sm" onclick="terminStornieren({{ termin.Termin_ID }})">
+                                Stornieren
+                            </button>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-muted">Sie haben noch keine Termine gebucht.</p>
+        {% endif %}
+    </section>
+    {% endif %}
+</div>
+
+<!-- Modal für Terminbuchung -->
+<div class="modal fade" id="terminModal" tabindex="-1" aria-labelledby="terminModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="terminModalLabel">Termin buchen</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="terminBuchungsForm">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="modalDatum" class="form-label">Datum:</label>
+                        <input type="date" class="form-control" id="modalDatum" name="datum" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label for="modalUhrzeit" class="form-label">Uhrzeit:</label>
+                        <input type="time" class="form-control" id="modalUhrzeit" name="uhrzeit" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label for="modalDienstleistung" class="form-label">Dienstleistung:</label>
+                        <select class="form-control" id="modalDienstleistung" name="dienstleistung_id" required>
+                            <option value="">Bitte wählen...</option>
+                            {% for dienst in dienstleistungen %}
+                            <option value="{{ dienst.Dienstleistung_ID }}" data-preis="{{ dienst.Preise }}" data-dauer="{{ dienst.Dauer }}">
+                                {{ dienst.Titel }} - {{ "%.2f"|format(dienst.Preise) }}€ ({{ dienst.Dauer }} Min)
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div id="terminDetails" class="alert alert-info" style="display: none;">
+                        <strong>Zusammenfassung:</strong><br>
+                        <span id="detailsDatum"></span><br>
+                        <span id="detailsUhrzeit"></span><br>
+                        <span id="detailsDienstleistung"></span><br>
+                        <span id="detailsPreis"></span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
+                    <button type="submit" class="btn btn-primary">Termin buchen</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+.calendar-grid .row {
+    margin: 0;
+}
+
+.calendar-day {
+    min-height: 100px;
+    cursor: pointer;
+}
+
+.calendar-day:hover {
+    background-color: #f8f9fa;
+}
+
+.day-number {
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.termin-slot {
+    font-size: 10px;
+    cursor: pointer;
+}
+
+.calendar-header {
+    background-color: #e9ecef;
+    font-weight: bold;
+}
+
+.text-xs {
+    font-size: 0.75rem;
+}
+</style>
+
+<script>
+let gewaehlteDienstleistung = null;
+
+// Termin buchen (für Nutzer)
+function terminBuchen(datum, uhrzeit) {
+    if (!gewaehlteDienstleistung) {
+        alert('Bitte wählen Sie zuerst eine Dienstleistung aus.');
+        return;
+    }
+
+    document.getElementById('modalDatum').value = datum;
+    document.getElementById('modalUhrzeit').value = uhrzeit;
+    document.getElementById('modalDienstleistung').value = gewaehlteDienstleistung;
+
+    updateTerminDetails();
+
+    const modal = new bootstrap.Modal(document.getElementById('terminModal'));
+    modal.show();
+}
+
+// Dienstleistung wählen
+function dienstleistungWaehlen(dienstleistungId) {
+    gewaehlteDienstleistung = dienstleistungId;
+
+    // Alle Karten zurücksetzen
+    document.querySelectorAll('.card').forEach(card => {
+        card.classList.remove('border-primary');
+    });
+
+    // Gewählte Karte hervorheben
+    event.target.closest('.card').classList.add('border-primary');
+
+    // Feedback für den Nutzer
+    const dienstName = event.target.closest('.card').querySelector('.card-title').textContent;
+    const toast = document.createElement('div');
+    toast.className = 'toast-container position-fixed top-0 end-0 p-3';
+    toast.innerHTML = `
+        <div class="toast show" role="alert">
+            <div class="toast-header">
+                <strong class="me-auto">Dienstleistung gewählt</strong>
+                <button type="button" class="btn-close" onclick="this.closest('.toast-container').remove()"></button>
+            </div>
+            <div class="toast-body">
+                ${dienstName} wurde ausgewählt. Klicken Sie nun auf einen verfügbaren Zeitslot im Kalender.
+            </div>
+        </div>
+    `;
+    document.body.appendChild(toast);
+
+    setTimeout(() => {
+        if (document.body.contains(toast)) {
+            toast.remove();
+        }
+    }, 5000);
+}
+
+// Termin-Details aktualisieren
+function updateTerminDetails() {
+    const datum = document.getElementById('modalDatum').value;
+    const uhrzeit = document.getElementById('modalUhrzeit').value;
+    const dienstleistungSelect = document.getElementById('modalDienstleistung');
+    const selectedOption = dienstleistungSelect.options[dienstleistungSelect.selectedIndex];
+
+    if (selectedOption && selectedOption.value) {
+        const dienstName = selectedOption.text;
+        const preis = selectedOption.getAttribute('data-preis');
+
+        document.getElementById('detailsDatum').textContent = `Datum: ${datum}`;
+        document.getElementById('detailsUhrzeit').textContent = `Uhrzeit: ${uhrzeit}`;
+        document.getElementById('detailsDienstleistung').textContent = `Service: ${dienstName}`;
+        document.getElementById('detailsPreis').textContent = `Preis: ${preis}€`;
+
+        document.getElementById('terminDetails').style.display = 'block';
+    }
+}
+
+// Zeitslot hinzufügen (für Anbieter)
+function zeitslotHinzufuegen(datum) {
+    document.getElementById('datum').value = datum;
+    document.getElementById('verfuegbarkeitForm').scrollIntoView({ behavior: 'smooth' });
+}
+
+// Formular-Handler
+document.addEventListener('DOMContentLoaded', function() {
+    // Terminbuchungs-Formular
+    const terminForm = document.getElementById('terminBuchungsForm');
+    if (terminForm) {
+        terminForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+
+            fetch('/termin_buchen', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Termin erfolgreich gebucht!');
+                    location.reload();
+                } else {
+                    alert('Fehler beim Buchen: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Ein Fehler ist aufgetreten.');
+            });
+        });
+    }
+
+    // Verfügbarkeits-Formular (für Anbieter)
+    const verfuegbarkeitForm = document.getElementById('verfuegbarkeitForm');
+    if (verfuegbarkeitForm) {
+        verfuegbarkeitForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+
+            fetch('/anbieter/verfuegbarkeit/hinzufuegen', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Verfügbarkeit hinzugefügt!');
+                    location.reload();
+                } else {
+                    alert('Fehler: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Ein Fehler ist aufgetreten.');
+            });
+        });
+    }
+
+    // Dienstleistungs-Auswahl Handler
+    const modalDienstleistung = document.getElementById('modalDienstleistung');
+    if (modalDienstleistung) {
+        modalDienstleistung.addEventListener('change', updateTerminDetails);
+    }
+
+    // Tooltips aktivieren
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+});
+
+// Termin stornieren
+function terminStornieren(terminId) {
+    if (confirm('Sind Sie sicher, dass Sie diesen Termin stornieren möchten?')) {
+        fetch(`/termin/stornieren/${terminId}`, {
+            method: 'POST'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Termin wurde storniert.');
+                location.reload();
+            } else {
+                alert('Fehler beim Stornieren: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Ein Fehler ist aufgetreten.');
+        });
+    }
+}
+
+// Termin abschließen (für Anbieter)
+function terminAbschliessen(terminId) {
+    if (confirm('Termin als abgeschlossen markieren?')) {
+        fetch(`/anbieter/termin/abschliessen/${terminId}`, {
+            method: 'POST'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Termin wurde abgeschlossen.');
+                location.reload();
+            } else {
+                alert('Fehler: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Ein Fehler ist aufgetreten.');
+        });
+    }
+}
+</script>
+{% endblock %}

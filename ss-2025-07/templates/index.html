@@ -1,0 +1,65 @@
+{% extends "layout.html" %}
+
+{% block title %}Bellaswipe - Startseite{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% endblock %}
+
+{% block content %}
+<div class="mainpage-bild">
+    <div class="hero-data">
+        <div class="hero-content">
+        <h3>Entdecken Sie die Welt der Schönheit - einfach, sicher und professionell</h3>
+        <p>Beauty Services verbindet Sie mit qualifizerten Schönheitsexperten in Ihrer Nähe.
+            Ob Frisur, Kosmemik, Massage oder Wellness, finden Sie den perfekten Service für Ihre Bedürfnisse</p>
+        </div>
+        <div class="hero-info">
+        <div class="kunden-info">
+        <h4>Für Kunden</h4>
+        <ul>
+            <li>Einfache Buchung</li>
+            <li>Transparente Bewertungen</li>
+            <li>Sichere Vewaltung</li>
+            <li>Flexibilität</li>
+        </ul>
+        </div>
+        <div class="anbieter-info">
+        <h4>Für Anbieter</h4>
+        <ul>
+            <li>Profesionelle Präsenz</li>
+            <li>Terminverwaltung</li>
+            <li>Kundenkontakt</li>
+            <li>Wachstum</li>
+        </ul>
+        </div>
+        </div>
+        <h2>Starten Sie jetzt - Buchen Sie Ihren Termin</h2>
+        <a href="{{ url_for('termin_buchen') }}" class="btn">Termin Buchen</a>
+    </div>
+</div>
+<section id="dienstleistungen">
+  <h2 class="dienstleistungen-heading">Dienstleistungen</h2>
+  <div class="service-buttons">
+      {% for service in services %}
+      <div class="image-wrapper">
+          <div class="image-container">
+            <img src="{{ url_for('static', filename=service.Bild) }}" alt="{{ service.Titel }}" class="project-img">
+            <h4 class="img-title">{{ service.Titel }}</h4>
+            <p>{{ service.Beschreibung }}</p>
+            <p><strong>Dauer:</strong> {{ service.Dauer }}</p>
+            <p><strong>Preis</strong> {{ service.Preise }}</p>
+          </div>
+      </div>
+       {% endfor %}
+  </div>
+</section>
+
+
+ <section>
+    <h2>Uber uns:</h2>
+    <p>Ein modernes etc</p>
+ </section>
+{% endblock %}
+

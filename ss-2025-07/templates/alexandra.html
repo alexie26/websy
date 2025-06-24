@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>Profil</title>
+</head>
+<body>
+    <h1>Maria Alexandra Rosu</h1>
+    <img src="{{ url_for('static', filename='alexandra.jpeg') }}" alt="My Profile Picture" width="200">
+    <h2>Database entries informations bout me:</h2>
+     <ul>
+         {% for row in data %}
+            <li>
+                Age: {{ row['Age'] }} |
+                Fav Color: {{ row['Fav Color'] }} |
+                Fav Season: {{ row['Fav Season'] }} |
+                Pet: {{ row['Pet'] }}
+            </li>
+        {% endfor %}
+     </ul>
+</body>
+</html>

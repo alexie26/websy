@@ -1,0 +1,50 @@
+{% extends "layout.html" %}
+
+{% block title %}Login - Bellaswipe{% endblock %}
+
+{% block content %}
+<div class="login-container">
+<div class="wrapper">
+  <form action="{{ url_for('login') }}" method="post" id="loginForm">
+    <h1 class="login-titel">Login</h1>
+  <div class="inputbox">
+    <div class="input-box">
+      <label for="benutzername">
+          <i class="bx bxs-user">Benutzername</i>
+      </label>
+      <input
+        type="text"
+        id="benutzername"
+        name="benutzername"
+        placeholder="Benutzername"
+        required
+      />
+    </div>
+    <div class="input-box">
+      <label for="password">
+          <i class="bx bxs-lock-alt">Passwort</i>
+      </label>
+      <input
+        type="password"
+        id="password"
+        name="password"
+        placeholder="Passwort"
+        required
+      />
+    </div>
+  </div>
+
+    <div id="remember-forgot">
+      <label><input type="checkbox" /> Remember me</label>
+      <a href="#" id="forgot-password">Passwort vergessen?</a>
+    </div>
+
+    <button type="submit" class="btn-pass">Anmelden</button>
+
+    <div class="register-link">
+      Kein Account? <a href="{{ url_for('register') }}">Jetzt registrieren</a>
+    </div>
+  </form>
+</div>
+</div>
+{% endblock %}

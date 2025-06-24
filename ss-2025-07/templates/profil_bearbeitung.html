@@ -1,0 +1,13 @@
+{% extends "layout.html" %}
+
+{% block title %}Mein Profil{% endblock %}
+
+{% block content %}
+<h2 class="profil-header">Mein Profil</h2>
+
+<p class="profil-p"><strong>Vorname:</strong> {{ nutzer.Vorname }}</p>
+<p class="profil-p"><strong>Nachname:</strong> {{ nutzer.Nachname }}</p>
+<p class="profil-p"><strong>Adresse:</strong> {{ nutzer.Strasse }}</p>
+<p class="profil-p"><strong>Benutzername:</strong> {{ nutzer.Benutzername }}</p>
+
+{% endblock %}
