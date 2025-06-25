@@ -1,11 +1,10 @@
 """Webbasierte Systeme - Gruppe 07
 """
 # Import benötigter Flask-Module
-from flask import Flask, render_template, request, g, redirect, url_for, session, flash
+from flask import Flask, render_template, request, g, redirect, url_for, session, flash, jsonify
 from functools import wraps
 from werkzeug.utils import secure_filename
 import os
-
 
 # Import MySQL-Connector
 import mysql.connector
@@ -61,7 +60,6 @@ def extract_form_data(request):
         'rolle': request.form.get('rolle', '').strip()
     }
 
-
 def insert_nutzer(cursor, form_data):
     cursor.execute("""
         INSERT INTO Nutzer (
@@ -78,13 +76,10 @@ def insert_nutzer(cursor, form_data):
         form_data['ort'],
         form_data['telefon']
     ))
-
     return cursor.lastrowid
-
 
 def insert_login(cursor, form_data, nutzer_id):
     hashed_password = generate_password_hash(form_data['password'])
-
     cursor.execute("""
         INSERT INTO Login (
             Benutzername, Passwort, Rolle, FK_Nutzer_ID
@@ -95,18 +90,14 @@ def insert_login(cursor, form_data, nutzer_id):
         form_data['rolle'],
         nutzer_id
     ))
-
     return cursor.lastrowid
-
 
 def validate_form_data(form_data, required_fields):
     missing_fields = []
     for field in required_fields:
         if not form_data.get(field):
             missing_fields.append(field)
-
     return missing_fields
-
 
 def generate_time_slots(start_hour=9, end_hour=17, interval_minutes=30):
     slots = []
@@ -116,9 +107,7 @@ def generate_time_slots(start_hour=9, end_hour=17, interval_minutes=30):
     while current_time < end_time:
         slots.append(current_time.strftime("%H:%M"))
         current_time += timedelta(minutes=interval_minutes)
-
     return slots
-
 
 def is_past_date(date_string):
     try:
@@ -136,7 +125,6 @@ def admin_required(f):
             return redirect(url_for('login'))
         return f(*args, **kwargs)
     return decorated_function
-
 
 def login_required(f):
     @wraps(f)
@@ -173,7 +161,6 @@ def bsaifo():
     cursor.close()
     return render_template('Bsaifo.html', daten=daten)
 
-
 @app.route('/galkudsy')
 def galkudsy():
     cursor = g.con.cursor(dictionary=True)
@@ -190,7 +177,6 @@ def alexandra():
     print(data)
     cursor.close()
     return render_template('alexandra.html', data=data)
-
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -213,7 +199,7 @@ def login():
         finally:
             cursor.close()
 
-        if user and check_password_hash(user['Passwort'], password):  # Passwort mit dem Hash vergleichen
+        if user and check_password_hash(user['Passwort'], password):
             session['user_id'] = user['Login_ID']
             session['benutzername'] = user['Benutzername']
             session['rolle'] = user['Rolle']
@@ -232,7 +218,6 @@ def login():
             flash('Benutzername oder Passwort falsch', 'danger')
             return redirect(url_for('login'))
     return render_template('login.html')
-
 
 @app.route('/logout')
 def logout():
@@ -262,7 +247,7 @@ def register():
                 login_id = cursor.lastrowid
                 cursor.execute("""
                 INSERT INTO Unternehmensprofil (
-                Titel, Beschreibung, EMail, Telefonnumer,
+                Titel, Beschreibung, EMail, Telefonnummer,
                 Adresse, Hausnummer, PLZ, Ort, FK_Login_ID
                 ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
                 """, (
@@ -280,7 +265,7 @@ def register():
 
             success_message = "Registrierung erfolgreich"
             if form_data['rolle'] == 'Anbieter':
-                success_message += "Sie konnen sich jetzt einlogen und Ihr Unternehmensprofil vervollstandigen"
+                success_message += " Sie konnen sich jetzt einlogen und Ihr Unternehmensprofil vervollstandigen"
 
             flash(success_message, "success")
             return redirect(url_for('login'))
@@ -305,7 +290,6 @@ def register():
             cursor.close()
     return render_template('register_auswahl.html')
 
-
 @app.route('/register/nutzer', methods=['GET', 'POST'])
 def register_nutzer():
     if request.method == 'POST':
@@ -314,7 +298,6 @@ def register_nutzer():
 
         cursor = g.con.cursor()
         try:
-            # Check all required fields including address and phone
             required_fields = ['vorname', 'nachname', 'email', 'benutzername', 'password',
                              'telefon', 'strasse', 'hausnummer', 'plz', 'ort']
             missing_fields = [field for field in required_fields if not form_data.get(field)]
@@ -350,7 +333,6 @@ def register_nutzer():
             cursor.close()
 
     return render_template("register_nutzer.html")
-
 
 @app.route('/register/anbieter', methods=['GET', 'POST'])
 def register_anbieter():
@@ -406,7 +388,6 @@ def register_anbieter():
             cursor.close()
 
     return render_template("register_anbieter.html")
-
 
 
 @app.route('/admin')
@@ -543,16 +524,6 @@ services = [
 @app.route('/nutzerprofil', methods=['GET', 'POST'])
 @login_required
 def nutzerprofil():
-    cursor = g.con.cursor(dictionary=True)
-    nutzer_id = session.get('nutzer_id')  # aus der Session
-    cursor.execute("SELECT * FROM Nutzer WHERE Nutzer_ID = %s", (nutzer_id,))
-    nutzer = cursor.fetchone()
-    cursor.close()
-    return render_template('nutzerprofil.html', nutzer=nutzer)"""
-
-@app.route('/nutzerprofil', methods=['GET', 'POST'])
-@login_required
-def nutzerprofil():
     nutzer_id = session.get('nutzer_id')
 
     if not nutzer_id:
@@ -598,20 +569,33 @@ def nutzerprofil():
 
     return render_template('nutzerprofil.html', nutzer=nutzer)
 
-
-
 @app.route("/unternehmensprofil")
+@login_required
 def unternehmensprofil():
     cursor = g.con.cursor(dictionary=True)
     try:
         cursor.execute("""
-        SELECT Titel, Beschreibung, EMail, Telefonnummer, Adresse, Hausnummer, PLZ, Ort
-        From Unternehmensprofil
-        """)
-        result = cursor.fetchall()
-        profil = result[0] if result else None
-
+        SELECT Titel, Beschreibung, EMail, Telefonnummer, Adresse, Hausnummer, PLZ, Ort, Bild
+        FROM Unternehmensprofil
+        WHERE FK_Login_ID = %s
+        """, (session['user_id'],))
+        profil = cursor.fetchone()
         return render_template("unternehmensprofil.html", profil=profil)
+    finally:
+        cursor.close()
+
+@app.route('/unternehmensprofil/edit')
+@login_required
+def unternehmensprofil_edit():
+    cursor = g.con.cursor(dictionary=True)
+    try:
+        cursor.execute("""
+        SELECT Titel, Beschreibung, EMail, Telefonnummer, Adresse, Hausnummer, PLZ, Ort, Bild
+        FROM Unternehmensprofil
+        WHERE FK_Login_ID = %s
+        """, (session['user_id'],))
+        profil = cursor.fetchone()
+        return render_template("unternehmensprofil_edit.html", profil=profil)
     finally:
         cursor.close()
 
@@ -619,26 +603,30 @@ def unternehmensprofil():
 @app.route('/anbieter/profil_speichern', methods=['POST'])
 @login_required
 def profil_speichern():
+    titel = request.form['titel']
     beschreibung = request.form.get('beschreibung')
     profilbild = request.files.get('profilbild')
 
-    if not beschreibung or not profilbild:
-        flash('Bitte alle Felder ausfüllen!', 'danger')
-        return redirect(url_for('unternehmensprofil'))
-
-    dateiname = profilbild.filename
-    profilbild.save(f'static/uploads/{dateiname}')
-
     cursor = g.con.cursor()
-    cursor.execute("""
-        INSERT INTO Unternehmensprofil (Beschreibung, Bild, Nutzer_ID)
-        VALUES (%s, %s, %s)
-        ON DUPLICATE KEY UPDATE Beschreibung = %s, Bild = %s
-    """, (beschreibung, dateiname, session['nutzer_id'], beschreibung, dateiname))
-    g.con.commit()
-    cursor.close()
+    try:
+        filename = None
+        if profilbild and profilbild.filename:
+            filename = secure_filename(profilbild.filename)
+            profilbild.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
-    flash('Profil gespeichert!', 'success')
+        cursor.execute("""
+            UPDATE Unternehmensprofil
+            SET Titel = %s, Beschreibung = %s, Bild = %s
+            WHERE FK_Login_ID = %s
+        """, (titel, beschreibung, filename, session['user_id']))
+        g.con.commit()
+        flash('Profil erfolgreich aktualisiert!', 'success')
+    except Exception as e:
+        g.con.rollback()
+        flash(f'Fehler beim Speichern {e}', 'danger')
+    finally:
+        cursor.close()
+
     return redirect(url_for('unternehmensprofil'))
 
 #dienstleistungen speichern
@@ -655,22 +643,21 @@ def dienstleistung_hinzufuegen():
         return redirect(url_for('unternehmensprofil'))
 
     cursor = g.con.cursor()
-    for i in range(len(titel)):
-        cursor.execute("""
-            INSERT INTO Dienstleistungen (Titel, Beschreibung, Dauer, Preis, Anbieter_ID)
-            VALUES (%s, %s, %s, %s, %s)
-        """, (titel[i], beschreibung[i], dauer[i], preis[i], session['nutzer_id']))
-    g.con.commit()
-    cursor.close()
+    try:
+        for i in range(len(titel)):
+            cursor.execute("""
+                INSERT INTO Dienstleistungen (Titel, Beschreibung, Dauer, Preise, FK_Login_ID)
+                VALUES (%s, %s, %s, %s, %s)
+            """, (titel[i], beschreibung[i], dauer[i], preis[i], session['user_id']))
+        g.con.commit()
+        flash('Dienstleistungen hinzugefügt!', 'success')
+    except Exception as e:
+        g.con.rollback()
+        flash(f'Fehler beim Hinzufügen: {str(e)}', 'danger')
+    finally:
+        cursor.close()
 
-    flash('Dienstleistungen hinzugefügt!', 'success')
     return redirect(url_for('unternehmensprofil'))
-
-
-# Zusätzliche Imports (fügen Sie diese zu Ihren bestehenden Imports hinzu)
-from datetime import datetime, timedelta
-from calendar import monthrange
-import calendar
 
 
 # Route für die Terminverwaltung

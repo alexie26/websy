@@ -1,0 +1,24 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Profil bearbeiten</h2>
+    <form method="POST" enctype="multipart/form-data" action="{{ url_for('profil_speichern') }}">
+        <div class="mb-3">
+            <label for="titel" class="form-label">Titel</label>
+            <input type="text" class="form-control" id="titel" name="titel" value="{{ profil.Titel }}" required>
+        </div>
+        <div class="mb-3">
+            <label for="beschreibung" class="form-label">Beschreibung</label>
+            <textarea class="form-control" id="beschreibung" name="beschreibung" rows="3" required>{{ profil.Beschreibung }}</textarea>
+        </div>
+        <div class="mb-3">
+            <label for="profilbild" class="form-label">Profilbild</label>
+            <input type="file" class="form-control" id="profilbild" name="profilbild">
+        </div>
+        <button type="submit" class="btn btn-success">Speichern</button>
+        <a href="{{ url_for('unternehmensprofil') }}" class="btn btn-secondary">Abbrechen</a>
+    </form>
+</div>
+{% endblock %}
+
